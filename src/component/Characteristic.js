@@ -5,6 +5,8 @@ import Select from "react-select";
 import ErrorLabel from "./ErrorLabel";
 import ReactTags from "react-tag-autocomplete";
 import { withRouter } from "react-router-dom";
+import EditableLabel from "./EditableLabel";
+
 
 class Characteristic extends React.Component {
   constructor(props) {
@@ -16,7 +18,8 @@ class Characteristic extends React.Component {
       isCharacteristicValid: [],
       isCriteriaSelected: null,
       showCriteriaError: false,
-      showBlockError: false
+      showBlockError: false,
+      labelToEdit: []
     };
   }
   criteriaOptions = [
@@ -65,7 +68,10 @@ class Characteristic extends React.Component {
 
   handleClickOnAddCharacteristic = () => {
     this.setState({ showBlockError: false });
-    this.setState({ characteristic: [...this.state.characteristic, []], isCharacteristicValid: [...this.state.isCharacteristicValid, false] });
+    this.setState({
+      characteristic: [...this.state.characteristic, []], isCharacteristicValid: [...this.state.isCharacteristicValid, false],
+      labelToEdit: [...this.state.labelToEdit, '']
+    });
   }
 
   handleClickOnRemove = (index) => {
@@ -74,7 +80,8 @@ class Characteristic extends React.Component {
     characteristic.splice(index, 1);
     const isCharacteristicValid = this.state.isCharacteristicValid.slice(0);
     isCharacteristicValid.splice(index, 1);
-    this.setState({ characteristic, isCharacteristicValid });
+    const labelToEdit = this.state.labelToEdit.slice(0);
+    this.setState({ characteristic, isCharacteristicValid, labelToEdit });
   }
 
   handleClickOnGenerateTestCases = () => {
@@ -119,6 +126,12 @@ class Characteristic extends React.Component {
     }
   }
 
+  changeLabelEvent = (label, index) => {
+    this.state.labelToEdit[index] = label;
+    const labelToEdit = [...this.state.labelToEdit];
+    this.setState({ labelToEdit });
+  };
+
   render() {
     console.log("size: ", this.state);
     return (
@@ -156,32 +169,49 @@ class Characteristic extends React.Component {
           <div className='border mt-4 rounded bg-white overflow-auto h-75'>
             {
               this.state.characteristic.map((c, index) =>
-                <div className="d-flex justify-content-between m-3">
-                  <div className="col-8">
-
-                    <ReactTags
-                      tags={this.state.characteristic[index]}
-                      suggestions={[]}
-                      handleDelete={(e) => this.handleDelete(e, index)}
-                      handleAddition={(e) => this.handleAddition(e, index)}
-                      allowNew
-                      placeholder="Write block and hit enter"
-                      minQueryLength={1}
-                    />
-                    {
-                      this.state.showBlockError && !this.state.isCharacteristicValid[index] &&
-                      <ErrorLabel />
-                    }
-
+                <div className="d-flex justify-content-between m-3 flex-column">
+                  <div className="row">
+                    <div className="col-12">
+                      <EditableLabel
+                        placeholder="Enter name for characteristics"
+                        labelValue={this.state.labelToEdit[index]}
+                        editChangeEvent={(e) => this.changeLabelEvent(e, index)}
+                        customEditIconStyle={{ color: "orange" }}
+                        customCancelIconStyle={{ color: "red" }}
+                        customApproveIconStyle={{ color: "green" }}
+                        placeholderStyle={{ color: "gray" }}
+                      />
+                    </div>
                   </div>
-                  <div className="col-2">
-                    <Button variant="danger" className='' onClick={(e) => this.handleClickOnRemove(index)}>
-                      Remove
-                    </Button>
+                  <div className="row justify-content-between">
+                    <div className="col-8">
+                      <ReactTags
+                        tags={this.state.characteristic[index]}
+                        suggestions={[]}
+                        handleDelete={(e) => this.handleDelete(e, index)}
+                        handleAddition={(e) => this.handleAddition(e, index)}
+                        allowNew={this.state.characteristic[index].length <= 30}
+                        placeholder="Write block and hit enter"
+                        minQueryLength={1}
+                      />
+                      {
+                        this.state.showBlockError && !this.state.isCharacteristicValid[index] &&
+                        <ErrorLabel />
+                      }
+
+                    </div>
+                    <div className="col-2">
+                      <Button variant="danger" className='' onClick={(e) => this.handleClickOnRemove(index)}>
+                        Remove
+                      </Button>
+                    </div>
                   </div>
+
                 </div>)
             }
-            <Button variant="secondary" className='m-3' onClick={this.handleClickOnAddCharacteristic}>
+            <Button variant="secondary" className='m-3'
+              disabled={this.state.characteristic.length == 30}
+              onClick={this.handleClickOnAddCharacteristic}>
               Add Characteristic
             </Button>
           </div>

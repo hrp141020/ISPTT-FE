@@ -1,11 +1,8 @@
 import React from "react";
 import { Button } from "react-bootstrap";
 import ReactDOM from "react-dom";
-import Select from "react-select";
-import ErrorLabel from "./ErrorLabel";
-import ReactTags from "react-tag-autocomplete";
 import { withRouter } from "react-router-dom";
-
+import { CSVLink, CSVDownload } from "react-csv";
 
 class GenerateTestcase extends React.Component {
   constructor(props) {
@@ -41,9 +38,12 @@ class GenerateTestcase extends React.Component {
               }
             </div>
             <div className='mt-auto mb-2 d-flex justify-content-center'>
-              <Button variant="secondary" onClick={this.handleClickOnAddCharacteristic}>
+              {/* <Button variant="secondary" onClick={this.handleClickOnAddCharacteristic}>
                 Export Testcases
-              </Button>
+              </Button> */}
+              <CSVLink data={this.props.location.state}>Export Testcases</CSVLink>
+              {/* <CSVDownload data={csvData} target="_blank" />; */}
+
             </div>
           </div>
         </div>
