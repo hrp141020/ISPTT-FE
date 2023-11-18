@@ -110,7 +110,7 @@ class Characteristic extends React.Component {
 
         const body = this.state.characteristic.map(chars => chars.map(c => c.name));
         console.log("body", body);
-        const rawResponse = await fetch(`https://ec2-13-58-203-89.us-east-2.compute.amazonaws.com:5000/${path}`, {
+        const rawResponse = await fetch(`http://ec2-13-58-203-89.us-east-2.compute.amazonaws.com:5000/${path}`, {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
