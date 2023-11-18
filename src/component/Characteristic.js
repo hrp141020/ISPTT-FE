@@ -162,7 +162,7 @@ class Characteristic extends React.Component {
               }
 
             </div>
-            <div className='col-6 col-md-2'>
+            <div className='col-6 col-md-3'>
               <Button variant="secondary" onClick={this.handleClickOnGenerateTestCases}>Generate Testcases </Button>
             </div>
           </div>
