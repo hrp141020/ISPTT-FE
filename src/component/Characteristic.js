@@ -17,9 +17,12 @@ class Characteristic extends React.Component {
       characteristic: [],
       isCharacteristicValid: [],
       isCriteriaSelected: null,
+      isBaseInputError: false,
       showCriteriaError: false,
       showBlockError: false,
-      labelToEdit: []
+      showBaseInputEror: false,
+      labelToEdit: [],
+      baseCaseInput: ''
     };
   }
   criteriaOptions = [
@@ -86,6 +89,7 @@ class Characteristic extends React.Component {
 
   handleClickOnGenerateTestCases = () => {
     let isError = false;
+    let modifiedBlocks = null;
     if (!this.state.isCriteriaSelected) {
       this.setState({ showCriteriaError: true });
       isError = true;
@@ -95,20 +99,60 @@ class Characteristic extends React.Component {
       this.setState({ showBlockError: true });
       isError = true;
     }
+    if (this.state.selectCriteria?.value === 'bc') {
+      const json = JSON.parse(JSON.stringify(this.state.characteristic));
+      const arr = [];
+      const chars = this.state.baseCaseInput.split(",");
+      console.log(">>> chars", chars);
+      console.log(">>> json: ", json);
+      chars.forEach(char => {
+        var index = -1;
+        for (var i = 0; i < json.length; i++) {
+          var characteristics = json[i];
+          console.log("charateristics: ", characteristics, char);
+          var flag = characteristics.some(e => e.name === char);
+
+          if (flag === true) {
+            index = i;
+            let blockIndex = characteristics.findIndex(e => e.name === char);
+
+            if (blockIndex !== -1) { // If element is found in the array
+              // Remove the element from its current position
+              characteristics.splice(blockIndex, 1); // This removes 1 element starting from the index
+
+              // Add the element at the beginning of the array
+              characteristics.unshift({ name: char });
+              arr.push(characteristics);
+              console.log(">>> index", index);
+              json.splice(index, 1);
+            }
+          }
+        }
+      });
+      if (json.length !== 0) {
+        this.setState({ showBaseInputEror: true, isBaseInputError: true });
+        isError = true;
+      }
+      else {
+        modifiedBlocks = arr;
+      }
+    }
+
     if (!isError) {
       (async () => {
         let path = '';
-        if (this.state.selectCriteria.value == 'acoc') {
+        if (this.state.selectCriteria?.value == 'acoc') {
           path = this.ALL_COMBINATIONS;
         }
-        else if (this.state.selectCriteria.value == 'ec') {
+        else if (this.state.selectCriteria?.value == 'ec') {
           path = this.EACH_CHOICE;
         }
         else {
           path = this.BASE_CHOICE;
         }
-
-        const body = this.state.characteristic.map(chars => chars.map(c => c.name));
+        console.log("state: ", this.state);
+        const body = this.state.selectCriteria?.value !== 'bc' ? this.state.characteristic.map(chars => chars.map(c => c.name)) :
+          modifiedBlocks.map(chars => chars.map(c => c.name));
         console.log("body", body);
         const rawResponse = await fetch(`http://ec2-13-58-203-89.us-east-2.compute.amazonaws.com:5000/${path}`, {
           method: 'POST',
@@ -130,6 +174,11 @@ class Characteristic extends React.Component {
     this.state.labelToEdit[index] = label;
     const labelToEdit = [...this.state.labelToEdit];
     this.setState({ labelToEdit });
+  };
+
+  handleInputChange = (event) => {
+    console.log("event: ", event)
+    this.setState({ baseCaseInput: event.target.value, isBaseInputError: false, showBaseInputEror: false });
   };
 
   render() {
@@ -167,6 +216,27 @@ class Characteristic extends React.Component {
             </div>
           </div>
           <div className='border mt-4 rounded bg-white overflow-auto h-75'>
+            {
+              this.state.selectCriteria?.value === 'bc' && (
+                <div className="d-flex justify-content-between m-3 flex-column">
+
+                  <div className="row">
+                    <div className="col-12">
+                      <div class="form-group">
+                        <label for="exampleInputEmail1">Enter base blocks</label>
+                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="e.g. a1,b1,c1"
+                          onChange={this.handleInputChange} />
+                        {
+                          this.state.showBaseInputEror &&
+                          <ErrorLabel message={"Invalid input!"} />
+                        }
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
             {
               this.state.characteristic.map((c, index) =>
                 <div className="d-flex justify-content-between m-3 flex-column">

@@ -1,13 +1,13 @@
 import React from "react";
 
-const RedLabel = () => {
+const RedLabel = ({ message }) => {
   const labelStyle = {
     color: 'red',
     'fontSize': '.875em'
   };
 
   return (
-    <label style={labelStyle}>This field is required</label>
+    <label style={labelStyle}>{message || 'This field is required'}</label>
   );
 };
 
