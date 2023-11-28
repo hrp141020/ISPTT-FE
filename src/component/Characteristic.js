@@ -35,6 +35,21 @@ class Characteristic extends React.Component {
   BASE_CHOICE = 'baseChoiceCriteria';
   EACH_CHOICE = 'eachChoiceCriteria';
 
+
+  componentDidMount() {
+    const prevState = localStorage.getItem('prevState');
+    if (prevState) {
+      const json = JSON.parse(prevState);
+      this.setState({
+        baseCaseInput: json.baseCaseInput, selectCriteria: json.selectCriteria, characteristic: json.characteristic,
+        isCriteriaSelected: json.isCriteriaSelected, isBaseInputError: json.isBaseInputError, showCriteriaError: json.showCriteriaError,
+        showBlockError: json.showBlockError, showBaseInputEror: json.showBaseInputEror,
+        labelToEdit: json.labelToEdit, baseCaseInput: json.baseCaseInput
+      });
+      localStorage.clear();
+    }
+  }
+
   setSelectedOption = (e) => {
     console.log(e);
     this.setState({ showCriteriaError: false });
@@ -42,8 +57,9 @@ class Characteristic extends React.Component {
       this.setState({ isCriteriaSelected: false });
     }
     else {
-      this.setState({ selectCriteria: e, isCriteriaSelected: true });
+      this.setState({ isCriteriaSelected: true });
     }
+    this.setState({ selectCriteria: e });
   }
 
   handleDelete(i, index) {
@@ -165,6 +181,7 @@ class Characteristic extends React.Component {
         const content = await rawResponse.json();
 
         console.log(content);
+        localStorage.setItem("prevState", JSON.stringify(this.state));
         this.props.history.push("/GenerateTestcase", content);
       })();
     }
@@ -198,7 +215,7 @@ class Characteristic extends React.Component {
                 placeholder="Select Criteria"
                 className="basic-single"
                 classNamePrefix="select"
-                // defaultValue={"Select Criteria"}
+                value={this.state.selectCriteria}
                 isClearable
                 isSearchable={false}
                 name="criteria"
